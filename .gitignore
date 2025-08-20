@@ -3,3 +3,6 @@
 *.jl.mem
 /Manifest.toml
 /docs/build/
+run
+/test/sofc/*.csv
+/test/soec/*.csv

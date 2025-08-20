@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ElectrochemicalCell model="ElectrodeReaction">
+	<cellT>1073.15</cellT>
+	<length>0.3</length>
+	<ncells>100</ncells>
+	<anode_channel>
+		<gasphase>CH4 H2 H2O CO2 CO O2 N2</gasphase>
+		<molefractions>H2=0.66,CH4=0.12,CO=0.22</molefractions>
+		<u>0.3</u>
+		<p>1e5</p>
+		<height>1e-3</height>
+		<width>1e-3</width>
+	</anode_channel>
+	<cathode_channel>
+		<gasphase>O2 N2</gasphase>
+		<molefractions>O2=0.21,N2=0.79</molefractions>
+		<u>1.3</u>
+		<p>1e5</p>
+		<height>1e-3</height>
+		<width>1e-3</width>
+	</cathode_channel>
+	<anode>
+		<thickness>1.22e-3</thickness>
+		<ncells>25</ncells>
+		<porosity>0.35</porosity>
+		<pore_dia>1e-6</pore_dia>
+		<particle_dia>2.5e-6</particle_dia>
+		<tortuosity>3.5</tortuosity>
+		<ionic_fraction>0.2</ionic_fraction>
+		<molefractions>H2=0.1, H2O=0.6,CH4=0.08,CO=0.22</molefractions>
+		<AsV>1e4</AsV>
+		<surf_mech>ch4ni.xml</surf_mech>
+	</anode>
+	<cathode>
+		<thickness>1.22e-3</thickness>
+		<ncells>25</ncells>
+		<porosity>0.35</porosity>
+		<pore_dia>1e-6</pore_dia>
+		<particle_dia>2.5e-6</particle_dia>
+		<tortuosity>3.5</tortuosity>
+		<ionic_fraction>0.2</ionic_fraction>
+		<molefractions>O2=0.2, N2=0.8</molefractions>
+		<!--surf_mech>ch4ni.xml</surf_mech-->
+	</cathode>
+	<electrolyte>
+		<thickness>50e-6</thickness>
+		<width>1.2e-3</width>
+		<sigma>3.6e7</sigma>
+		<E>8e4</E>
+	</electrolyte>
+	<solver>
+		<abstol>1e-8</abstol>
+		<reltol>1e-10</reltol>
+	</solver>
+</ElectrochemicalCell>

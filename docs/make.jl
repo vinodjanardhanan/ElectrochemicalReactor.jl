@@ -1,16 +1,16 @@
-using ElectrochemicalCell
+using ElectrochemicalReactor
 using Documenter
 
-DocMeta.setdocmeta!(ElectrochemicalCell, :DocTestSetup, :(using ElectrochemicalCell); recursive=true)
+DocMeta.setdocmeta!(ElectrochemicalReactor, :DocTestSetup, :(using ElectrochemicalReactor); recursive=true)
 
 makedocs(;
-    modules=[ElectrochemicalCell],
+    modules=[ElectrochemicalReactor],
     authors="Vinod Janardhanan",
-    repo="https://github.com/vinodjanardhanan/ElectrochemicalCell.jl/blob/{commit}{path}#{line}",
-    sitename="ElectrochemicalCell.jl",
+    repo="https://github.com/vinodjanardhanan/ElectrochemicalReactor.jl/blob/{commit}{path}#{line}",
+    sitename="ElectrochemicalReactor.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://vinodjanardhanan.github.io/ElectrochemicalCell.jl",
+        canonical="https://vinodjanardhanan.github.io/ElectrochemicalReactor.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/vinodjanardhanan/ElectrochemicalCell.jl",
+    repo="github.com/vinodjanardhanan/ElectrochemicalReactor.jl",
     devbranch="main",
 )

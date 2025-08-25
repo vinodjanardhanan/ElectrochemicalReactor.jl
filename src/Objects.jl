@@ -160,7 +160,7 @@ mutable struct SOFC_H2 <: FuelCell
     iH2O::Int64
     iO2::Int64
     slvr_cntrl::Solver
-    SOFC_H2(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, Solver())
+    SOFC_H2(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, slvr_cntrl) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, slvr_cntrl)
 end
 
 mutable struct SOEC_H2 <: ElectrolysisCell
@@ -176,7 +176,7 @@ mutable struct SOEC_H2 <: ElectrolysisCell
     iH2O::Int64
     iO2::Int64
     slvr_cntrl::Solver
-    SOEC_H2(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, Solver())
+    SOEC_H2(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, slvr_cntrl) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, slvr_cntrl)
 end
 
 mutable struct SOFC_CO <: FuelCell
@@ -192,7 +192,7 @@ mutable struct SOFC_CO <: FuelCell
     iH2O::Int64
     iO2::Int64
     slvr_cntrl::Solver
-    SOFC_CO(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, Solver())
+    SOFC_CO(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, slvr_cntrl) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, slvr_cntrl)
 end
 
 

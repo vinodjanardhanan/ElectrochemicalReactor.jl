@@ -52,8 +52,9 @@ function electrode_reaction(p::SOFC_H2)
     pH2O = p.anode.conc[end][p.iH2O]*IdealGas.R*T
     pO2 = p.cathode.conc[end][p.iO2]*IdealGas.R*T
 
-    
-    p.eChem.Erev = nernst(p.eChem.Estd, T, pH2=pH2, pH2O = pH2O, pO2=pO2)
+
+    # p.eChem.Erev = nernst_potential(H2Oxidation(), p.eChem.Estd, T, aH2=pH2/IdealGas.p_std, aH2O = pH2O/IdealGas.p_std, aO2=pO2/IdealGas.p_std)
+    p.eChem.Erev = nernst_h2(p.eChem.Estd, T, pH2=pH2, pH2O = pH2O, pO2=pO2)
     p.eChem.ecp = p.eChem.udf((pH2=pH2, pH2O = pH2O, pO2=pO2))        
     solve_electrochemistry(p)    
 end
@@ -64,8 +65,8 @@ function electrode_reaction(p::SOEC_H2)
     pH2O = p.anode.conc[end][p.iH2O]*IdealGas.R*T
     pO2 = p.anode.conc[end][p.iO2]*IdealGas.R*T
 
-    
-    p.eChem.Erev = nernst(p.eChem.Estd, T, pH2=pH2, pH2O = pH2O, pO2=pO2)
+    # p.eChem.Erev = nernst_potential(H2Oxidation(), p.eChem.Estd, T, aH2=pH2/IdealGas.p_std, aH2O = pH2O/IdealGas.p_std, aO2=pO2/IdealGas.p_std)
+    p.eChem.Erev = nernst_h2(p.eChem.Estd, T, pH2=pH2, pH2O = pH2O, pO2=pO2)
     p.eChem.ecp = p.eChem.udf((pH2=pH2, pH2O = pH2O, pO2=pO2))        
     solve_electrochemistry(p)    
 end
@@ -125,32 +126,32 @@ end
 
 function init_electrochemitry(sofc::SOFC_H2)    
     T = sofc.anode.ch.gp.T
-    pH2 = sofc.anode.conc[end][sofc.iH2]*IdealGas.R*T
-    pH2O = sofc.anode.conc[end][sofc.iH2O]*IdealGas.R*T
-    pO2 = sofc.cathode.conc[end][sofc.iO2]*IdealGas.R*T
+    # aH2 = sofc.anode.conc[end][sofc.iH2]*IdealGas.R*T/IdealGas.p_std
+    # aH2O = sofc.anode.conc[end][sofc.iH2O]*IdealGas.R*T/IdealGas.p_std
+    # aO2 = sofc.cathode.conc[end][sofc.iO2]*IdealGas.R*T/IdealGas.p_std
     sofc.eChem.Estd = E0_H2(sofc.ch_anode.gp.thermo_obj, sofc.ch_cathode.gp.thermo_obj, T)    
-    sofc.eChem.Erev = nernst(sofc.eChem.Estd, T, pH2=pH2, pH2O = pH2O, pO2=pO2)        
+    sofc.eChem.Erev = 0.0#nernst_potential(H2Oxidation(), sofc.eChem.Estd, T, aH2=aH2, aH2O = aH2O, aO2=aO2)        
     sofc.eChem.vsoln = [0.1, 0.1, -0.1] # initial guess for the solution
 end
 
 function init_electrochemitry(soec::SOEC_H2)    
     T = soec.anode.ch.gp.T
-    pH2 = soec.cathode.conc[end][soec.iH2]*IdealGas.R*T
-    pH2O = soec.cathode.conc[end][soec.iH2O]*IdealGas.R*T
-    pO2 = soec.anode.conc[end][soec.iO2]*IdealGas.R*T
+    # aH2 = soec.cathode.conc[end][soec.iH2]*IdealGas.R*T/IdealGas.p_std
+    # aH2O = soec.cathode.conc[end][soec.iH2O]*IdealGas.R*T/IdealGas.p_std
+    # aO2 = soec.anode.conc[end][soec.iO2]*IdealGas.R*T/IdealGas.p_std
     soec.eChem.Estd = E0_H2(soec.ch_anode.gp.thermo_obj, soec.ch_cathode.gp.thermo_obj, T)        
-    soec.eChem.Erev = nernst(soec.eChem.Estd, T, pH2=pH2, pH2O = pH2O, pO2=pO2)        
+    soec.eChem.Erev = 0.0#nernst_potential(H2Oxidation(), soec.eChem.Estd, T, aH2=aH2, aH2O = aH2O, aO2=aO2)        
     soec.eChem.vsoln = [0.1, 0.1, -0.1] # initial guess for the solution
 end
 
 
 function init_electrochemitry(sofc::SOFC_CO)
     T = sofc.anode.ch.gp.T
-    pCO = sofc.anode.conc[end][sofc.iCO]*IdealGas.R*T
-    pCO2 = sofc.anode.conc[end][sofc.iCO2]*IdealGas.R*T
-    pO2 = sofc.cathode.conc[end][sofc.iO2]*IdealGas.R*T
+    # aCO = sofc.anode.conc[end][sofc.iCO]*IdealGas.R*T/IdealGas.p_std
+    # aCO2 = sofc.anode.conc[end][sofc.iCO2]*IdealGas.R*T/IdealGas.p_std
+    # aO2 = sofc.cathode.conc[end][sofc.iO2]*IdealGas.R*T/IdealGas.p_std
     sofc.eChem.Estd = E0_CO(sofc.anode.ch.gp.thermo_obj, sofc.anode.ch.gp.T)    
-    sofc.eChem.Erev = nernst_co(sofc.eChem.Estd, T, pCO=pCO, pO2=pO2, pCO2=pCO2)   
+    sofc.eChem.Erev = 0.0#nernst_potential(COxidation(), sofc.eChem.Estd, T, aCO=aCO, aO2=aO2, aCO2=aCO2)   
     sofc.eChem.vsoln = [0.1, 0.1, -0.1] # initial guess for the solution           
 end
 

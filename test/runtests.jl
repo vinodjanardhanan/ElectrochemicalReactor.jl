@@ -1,7 +1,7 @@
-using ElectrochemicalCell
+using ElectrochemicalReactor
 using Test
 
-@testset "ElectrochemicalCell.jl" begin
+@testset "ElectrochemicalReactor.jl" begin
     if Sys.isapple() || Sys.islinux()
         lib_dir ="lib/"
     elseif Sys.iswindows()
@@ -23,7 +23,7 @@ using Test
             EChemParams(Ecell, i0a, i0c, α_ox_anode, α_rd_anode, α_ox_cathode, α_rd_cathode)
         end
         objects, solver_ctrl = get_cell_components(input_file, lib_dir)
-        sofc = SOFC_H2(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells)
+        sofc = SOFC_H2(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells, solver_ctrl)        
         run_cell(echemModel, sofc, "sofc")        
     end
 
@@ -42,7 +42,7 @@ using Test
             EChemParams(Ecell, i0a, i0c, α_ox_anode, α_rd_anode, α_ox_cathode, α_rd_cathode)
         end
         objects, solver_ctrl = get_cell_components(input_file, lib_dir)
-        soec = SOEC_H2(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells)
+        soec = SOEC_H2(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells, solver_ctrl)
         run_cell(echemModel, soec, "soec")        
     end
 

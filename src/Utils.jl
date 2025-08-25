@@ -155,7 +155,7 @@ function E0_H2(anodeThermo, cathodeThermo, T::Float64)
     return IdealGas.E0_H2(echemthermo, T)
 end
 
-
+#= function to create output streams =#
 function create_output_streams(object::Cell, output_file_folder::String)
     anode_channel_stream = open(joinpath(output_file_folder, "anode_channel.csv"), "w")
     write_csv(anode_channel_stream, ["z", "T", "u"], object.ch_anode.gp.species)
@@ -175,6 +175,7 @@ function create_output_streams(object::Cell, output_file_folder::String)
     return CellStreams(anode_channel_stream, anode_stream, cathode_channel_stream, cathode_stream, echem_stream)
 end
 
+#=Function to close all output stream=#
 function close_output_streams(os::CellStreams)
     close(os.anode_channel)
     close(os.cathode_channel)
@@ -183,7 +184,7 @@ function close_output_streams(os::CellStreams)
     close(os.echem)
 end
 
-
+#= main function call for writing output =#
 function write_output(p::Cell, os::CellStreams, z::Float64)
     write_channel(os.anode_channel, z, p.ch_anode)
     write_channel(os.cathode_channel, z, p.ch_cathode)
@@ -195,11 +196,11 @@ function write_output(p::Cell, os::CellStreams, z::Float64)
     
 end
 
-
+#= write the channel data =#
 function write_channel(stream,z,channel)
     write_csv(stream, [z, channel.gp.T, channel.upstream.u], channel.gp.mole_fractions)    
 end
-
+#= write the electrode data =#
 function write_electrode(stream, z, electrode::Electrode)
     δy = electrode.t/electrode.ncells
     y0 = 0.5*δy
@@ -211,6 +212,7 @@ function write_electrode(stream, z, electrode::Electrode)
     end    
 end
 
+#= write the electrochemistry data =#
 function write_electrochemistry(stream, z, eco::ElectrochemObject )
     write_csv(stream, [z, eco.Estd, eco.Erev], eco.vsoln)
 end

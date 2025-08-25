@@ -1,4 +1,4 @@
-module ElectrochemicalCell
+module ElectrochemicalReactor
 
 
 using LightXML, RxnHelperUtils, ReactionCommons, Printf
@@ -96,7 +96,7 @@ end
 #=
 function evaluation for species transduction in the channel
 - du : residual vector
-- u : solution vector
+- u : solution vector 
 - ch : Channel object
 - ele : Electrolyte object
 - δx : width of the finite volume cell

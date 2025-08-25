@@ -114,6 +114,7 @@ function get_electrode_kinetics(xmlroot::XMLElement)
     end
 end
 
+
 """
 Function to read the channel data
 # Usage 

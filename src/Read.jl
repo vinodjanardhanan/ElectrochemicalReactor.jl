@@ -198,7 +198,7 @@ Function to read the electrolyte data
 function get_electrolyte(elec::XMLElement)
     t = get_value_from_xml(elec, "thickness")
     w = get_value_from_xml(elec, "width")
-    sigma = get_value_from_xml(elec, "sigma")
+    sigma = get_value_from_xml(elec, "sigma")/100.0 # convert to S/cm
     E = get_value_from_xml(elec, "E")
     ic = IonicConductivity(sigma, E)
     return Electrolyte(t, w, ic)

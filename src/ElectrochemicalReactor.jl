@@ -108,7 +108,7 @@ function resid_channel!(du, u, ch::Channel, ele::Electrolyte, δx)
             i = l - ch.g_ptr.start + 1
             du[l] = ch.upstream.mass_fracs[i] - u[l]
         end
-        # println("convection ", ch.upstream.ρu, "\t", u[ch.m_ptr], "\t", δx)
+        
         du[ch.m_ptr] = ch.upstream.ρu - u[ch.m_ptr]        
     else
         ρ = get_density(ch.gp.conc, ch.gp.thermo_obj.molwt)    
@@ -129,7 +129,7 @@ function resid_channel!(du, u, ch::Channel, ele::Electrolyte, δx)
         # println("convection ", ch.upstream.ρu, "\t", u[ch.m_ptr], "\t", δx)
         convection = (ch.upstream.ρu - u[ch.m_ptr])/δx
         # momentum
-        du[ch.m_ptr] =  convection + diff_tot
+        du[ch.m_ptr] =  ch.u *( convection + diff_tot)
         
     end
     
@@ -149,12 +149,12 @@ function resid_electrode!(du, elc, δy)
         # sum_flux = 0.0
         if j == 1 # Interface with the channel
             diffusion = -(elc.ch.jks - elc.jks[j])/δy
-            source = elc.source[j][1:ng]
+            source = (elc.source[j][1:ng] .* elc.ch.gp.thermo_obj.molwt) * elc.AbyV
             du[elc.g_ptr[j]] = (diffusion + source )/elc.pm.ϵ
             sum_flux = -sum(diffusion + source)            
         else
             diffusion = (elc.jks[j-1] - elc.jks[j])/δy
-            source = elc.source[j][1:ng]
+            source = (elc.source[j][1:ng] .* elc.ch.gp.thermo_obj.molwt) * elc.AbyV
             du[elc.g_ptr[j]] = (diffusion + source )/elc.pm.ϵ
             sum_flux = sum(diffusion + source)            
         end
@@ -209,7 +209,8 @@ function run_cell(object::Cell, soln::Array{Float64,1}, cell_streams::CellStream
         z = (axpos - 1)* object.δx
         write_output(object, cell_streams, z)
 
-        @printf("%4e\n",z)
+        @printf("%4e %4e\n",z, object.eChem.vsoln[1])
+        
     end
     
 end

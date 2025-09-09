@@ -44,7 +44,8 @@ using Test
             return EChemParams(Ecell, i0anode, i0cathode, α_ox_anode, α_rd_anode, α_ox_cathode, α_rd_cathode)
         end
         objects, solver_ctrl = get_cell_components(input_file, lib_dir)
-        sofc = SOFC_H2(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells, solver_ctrl)        
+        sofc_core = CellCore(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells, solver_ctrl)
+        sofc = SOFC_H2(sofc_core)        
         run_cell(echemModel, sofc, "sofc")        
     end
 
@@ -63,8 +64,30 @@ using Test
             EChemParams(Ecell, i0a, i0c, α_ox_anode, α_rd_anode, α_ox_cathode, α_rd_cathode)
         end
         objects, solver_ctrl = get_cell_components(input_file, lib_dir)
-        soec = SOEC_H2(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells, solver_ctrl)
+        soec_core  = CellCore(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells, solver_ctrl)
+        soec = SOEC_H2(soec_core)
         run_cell(echemModel, soec, "soec")        
+    end
+
+
+
+    @testset "Testing HTPEM" begin
+        input_file = joinpath("htpem", "htpem.xml")
+        function echemModel(arg)
+            # println(arg)
+            Ecell = 0.6
+            i0a = 10000e-5
+            i0c = 10000e-8
+            α_ox_anode = 0.5
+            α_rd_anode = 0.5
+            α_ox_cathode = 0.5
+            α_rd_cathode = 0.5 
+            EChemParams(Ecell, i0a, i0c, α_ox_anode, α_rd_anode, α_ox_cathode, α_rd_cathode)
+        end
+        objects, solver_ctrl = get_cell_components(input_file, lib_dir)
+        htpem_core  = CellCore(objects.ch_anode, objects.anode, objects.ch_cathode, objects.cathode, objects.electrolyte, objects.δx, objects.ncells, solver_ctrl)
+        htpem = HTPEM(htpem_core)
+        run_cell(echemModel, htpem, "htpem")        
     end
 
 end

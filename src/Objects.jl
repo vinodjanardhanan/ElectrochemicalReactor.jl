@@ -58,8 +58,8 @@ mutable struct Electrode
     t::Float64
     ncells::Int64    
     pm::Properties
-    mech
-    srs
+    mech::Union{Nothing,SurfaceMechDefinition}
+    srs::Union{Nothing, ReactionState}
     ws::WorkSpace
     sp_trd
     AbyV::Float64
@@ -67,6 +67,7 @@ mutable struct Electrode
     mass_fracs::Array{Float64,1 }
     mass_density::Array{Array{Float64,1},1}
     conc::Array{Array{Float64,1},1}
+    p::Array{Float64,1}
     source::Array{Array{Float64,1},1}
     jks::Array{Array{Float64,1},1}    
     g_ptr::Array{UnitRange{Int64}}
@@ -74,7 +75,7 @@ mutable struct Electrode
     s_ptr::Array{UnitRange{Int64}} 
     Electrode(ch,t,ncells,pm,mech, srs, 
     ws,sp_trd, AbyV ,mole_fracs, mass_fracs, 
-    mass_density, conc,source,jks) = new(ch,t,ncells,pm,mech,srs, ws,sp_trd, AbyV,mole_fracs,mass_fracs,mass_density,conc,source,jks,[],[],[])
+    mass_density, conc,p,source,jks) = new(ch,t,ncells,pm,mech,srs, ws,sp_trd, AbyV,mole_fracs,mass_fracs,mass_density,conc,p,source,jks,[],[],[])
 end
 
 """
@@ -119,17 +120,6 @@ mutable struct EChemParams
     new(Ecell, i0a, i0c, α_ox_anode, α_rd_anode, α_ox_cathode, α_rd_cathode)    
 end
 
-# struct H2Chemistry 
-#     iH2::Int64
-#     iH2O::Int64
-#     iO2::Int64
-# end
-
-# struct COChemistry 
-#     iCO::Int64
-#     iCO2::Int64
-#     iO2::Int64
-# end
 
 mutable struct ElectrochemObject
     ecp::EChemParams    
@@ -147,7 +137,7 @@ abstract type Cell end
 abstract type FuelCell <: Cell end
 abstract type ElectrolysisCell <: Cell end
 
-mutable struct SOFC_H2 <: FuelCell
+mutable struct CellCore 
     ch_anode::Channel
     anode::Electrode
     ch_cathode::Channel
@@ -156,45 +146,43 @@ mutable struct SOFC_H2 <: FuelCell
     δx::Float64
     ncells::Int64
     eChem::ElectrochemObject
+    slvr_cntrl::Solver
+    CellCore(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, slvr_cntrl) = 
+    new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), slvr_cntrl)               
+end
+
+mutable struct SOFC_H2 <: FuelCell
+    core::CellCore
     iH2::Int64
     iH2O::Int64
     iO2::Int64
-    slvr_cntrl::Solver
-    SOFC_H2(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, slvr_cntrl) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, slvr_cntrl)
+    SOFC_H2(core) = new(core, 0, 0, 0)
 end
 
 mutable struct SOEC_H2 <: ElectrolysisCell
-    ch_anode::Channel
-    anode::Electrode
-    ch_cathode::Channel
-    cathode::Electrode    
-    electrolyte::Electrolyte
-    δx::Float64
-    ncells::Int64
-    eChem::ElectrochemObject
+    core::CellCore
     iH2::Int64
     iH2O::Int64
     iO2::Int64
-    slvr_cntrl::Solver
-    SOEC_H2(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, slvr_cntrl) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, slvr_cntrl)
+    SOEC_H2(core) = new(core, 0, 0, 0)
+end
+
+mutable struct HTPEM <: FuelCell
+    core::CellCore
+    iH2::Int64
+    iH2O::Int64
+    iO2::Int64    
+    HTPEM(core) = new(core, 0, 0, 0)
 end
 
 mutable struct SOFC_CO <: FuelCell
-    ch_anode::Channel
-    anode::Electrode
-    ch_cathode::Channel
-    cathode::Electrode    
-    electrolyte::Electrolyte
-    δx::Float64
-    ncells::Int64
-    eChem::ElectrochemObject
-    iH2::Int64
-    iH2O::Int64
+    core::CellCore
+    iCO::Int64
+    iCO2::Int64
     iO2::Int64
-    slvr_cntrl::Solver
-    SOFC_CO(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, slvr_cntrl) = new(ch_anode, anode, ch_cathode, cathode, electrolyte, δx, ncells, ElectrochemObject(), 0, 0, 0, slvr_cntrl)
+    SOFC_CO(core) = new(core, 0, 0, 0)
 end
-
+   
 
 struct CellStreams
     anode_channel::IO

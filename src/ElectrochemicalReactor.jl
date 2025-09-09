@@ -6,7 +6,7 @@ using IdealGas, SurfaceReactions, DiffusionFlux, TransportProperties
 using Sundials, DifferentialEquations, SteadyStateDiffEq
 using NonlinearSolve, NLsolve
 
-export SOFC_H2, SOEC_H2, SOFC_CO, EChemParams
+export SOFC_H2, SOEC_H2, SOFC_CO, HTPEM, EChemParams, CellCore
 
 
 @enum ElectrochemicalModel ElectrodeReaction=1 PorousElectrode=2
@@ -32,22 +32,22 @@ export get_cell_components, run_cell
 Main function for the calculation of residuals
 =#
 function residual!(du, u, p, t)
-    
-    δy_anode = p.anode.t/p.anode.ncells
-    δy_cathode = p.cathode.t/p.cathode.ncells
-    
-    anode_molwts = p.anode.ch.gp.thermo_obj.molwt    
-    cathode_molwts = p.cathode.ch.gp.thermo_obj.molwt
+
+    δy_anode = p.core.anode.t/p.core.anode.ncells
+    δy_cathode = p.core.cathode.t/p.core.cathode.ncells
+
+    anode_molwts = p.core.anode.ch.gp.thermo_obj.molwt
+    cathode_molwts = p.core.cathode.ch.gp.thermo_obj.molwt
     # eco = p[:eco]
     
     
     # Anode update 
-    update_half_cell!(p.ch_anode, p.anode, u)
-    calc_flux_electrode(p.anode, anode_molwts)
+    update_half_cell!(p.core.ch_anode, p.core.anode, u)
+    calc_flux_electrode(p.core.anode, anode_molwts)
 
     # Cathode update 
-    update_half_cell!(p.ch_cathode, p.cathode, u)
-    calc_flux_electrode(p.cathode, cathode_molwts)    
+    update_half_cell!(p.core.ch_cathode, p.core.cathode, u)
+    calc_flux_electrode(p.core.cathode, cathode_molwts)    
 
     if electrode_kinetics == ElectrodeReaction        
         electrode_reaction(p)
@@ -55,11 +55,11 @@ function residual!(du, u, p, t)
     end
     
 
-    resid_channel!(du, u, p.anode.ch, p.electrolyte, p.δx)
-    resid_electrode!(du, p.anode, δy_anode)
+    resid_channel!(du, u, p.core.anode.ch, p.core.electrolyte, p.core.δx)
+    resid_electrode!(du, p.core.anode, δy_anode)
 
-    resid_channel!(du, u, p.cathode.ch, p.electrolyte, p.δx)
-    resid_electrode!(du, p.cathode, δy_cathode)
+    resid_channel!(du, u, p.core.cathode.ch, p.core.electrolyte, p.core.δx)
+    resid_electrode!(du, p.core.cathode, δy_cathode)
 
 end
 
@@ -88,7 +88,8 @@ function calc_flux_electrode(electrode::Electrode, molwts)
     δy = electrode.t/electrode.ncells
     flux_interface!(electrode.ch.jks, electrode.ch.gp.conc, electrode.conc[1], electrode.ws, molwts, δy)          
     # calculate the mass fluxes within the electrode
-    flux_dgm!(electrode.jks, electrode.conc, electrode.pm, electrode.ws, electrode.sp_trd, molwts, electrode.ch.gp.T, δy)        
+    flux_dgm!(electrode.jks, electrode.conc, electrode.pm, electrode.ws, electrode.sp_trd, molwts, electrode.ch.gp.T, δy)  
+    # flux_porous_media_fick!(electrode.jks, electrode.conc, electrode.pm, electrode.sp_trd, electrode.ws , molwts, electrode.ch.gp.T, δy)      
     set_flux_zeros!(electrode)    
 end
 
@@ -180,11 +181,11 @@ end
 
 
 function run_cell(em::F, cell::Cell, output_file_folder=".") where {F <: Function}
-    cell.eChem.udf = em
-    soln = prepare_solution(cell.ch_anode, cell.anode, cell.cathode, cell.ch_cathode)
+    cell.core.eChem.udf = em
+    soln = prepare_solution(cell.core.ch_anode, cell.core.anode, cell.core.cathode, cell.core.ch_cathode)
     electrochemical_species_index(cell)
-    update_properties!(cell.anode, soln)
-    update_properties!(cell.cathode, soln)
+    update_properties!(cell.core.anode, soln)
+    update_properties!(cell.core.cathode, soln)
     init_electrochemitry(cell)
     cell_streams = create_output_streams(cell, output_file_folder)
     run_cell(cell, soln, cell_streams)
@@ -192,25 +193,26 @@ end
 
 function run_cell(object::Cell, soln::Array{Float64,1}, cell_streams::CellStreams) 
     
-    ncells = object.ncells
-    t_span = (0, 1e5)    
-    svrcntrl = object.slvr_cntrl
+    ncells = object.core.ncells
+    t_span = (0, 1e3)    
+    svrcntrl = object.core.slvr_cntrl
 
     println("Axial position in the channel")
+    prob = ODEProblem(residual!, soln, t_span, object)            
     for i in 1:ncells+1                
         global axpos = i
-        prob = ODEProblem(residual!, soln, t_span, object)            
+        
         sol = solve(prob, CVODE_BDF(), reltol=svrcntrl.reltol, abstol=svrcntrl.abstol, save_everystep = false)
         soln = sol.u[end]
 
-        reset_upstream(object.ch_anode, soln)
-        reset_upstream(object.ch_cathode, soln)
+        reset_upstream(object.core.ch_anode, soln)
+        reset_upstream(object.core.ch_cathode, soln)
         #axial position
-        z = (axpos - 1)* object.δx
+        z = (axpos - 1)* object.core.δx
         write_output(object, cell_streams, z)
+        prob = remake(prob, u0=soln, p = object)
+        @printf("%4e %4e\n",z, object.core.eChem.vsoln[1])
 
-        @printf("%4e %4e\n",z, object.eChem.vsoln[1])
-        
     end
     
 end

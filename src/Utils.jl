@@ -100,11 +100,13 @@ function update_properties!(el::Electrode, u)
         ρ = sum(el.mass_density[j]) # total mass density
         # mass fractions
         el.mass_fracs = el.mass_density[j] /ρ
+        
         # mole fractions
         massfrac_to_molefrac!(el.mole_fracs, el.mass_fracs, el.ch.gp.thermo_obj.molwt)
         
         Cb = ρ/average_molwt(el.mole_fracs, el.ch.gp.thermo_obj.molwt)
         p = Cb * IdealGas.R * el.ch.gp.T
+        el.p[j] = p
         el.conc[j] = el.mole_fracs .* Cb
         if el.mech != nothing
             #update the surface reaction state 
@@ -158,16 +160,16 @@ end
 #= function to create output streams =#
 function create_output_streams(object::Cell, output_file_folder::String)
     anode_channel_stream = open(joinpath(output_file_folder, "anode_channel.csv"), "w")
-    write_csv(anode_channel_stream, ["z", "T", "u"], object.ch_anode.gp.species)
+    write_csv(anode_channel_stream, ["z", "T", "u"], object.core.ch_anode.gp.species)
 
     cathode_channel_stream = open(joinpath(output_file_folder, "cathode_channel.csv"), "w")
-    write_csv(cathode_channel_stream, ["z", "T", "u"], object.ch_cathode.gp.species)
+    write_csv(cathode_channel_stream, ["z", "T", "u"], object.core.ch_cathode.gp.species)
 
     anode_stream = open(joinpath(output_file_folder, "anode.csv"), "w")
-    write_csv(anode_stream, ["z", "y"], object.anode.ch.gp.species)
+    write_csv(anode_stream, ["z", "y"], object.core.anode.ch.gp.species)
 
     cathode_stream = open(joinpath(output_file_folder, "cathode.csv"), "w")
-    write_csv(cathode_stream, ["z", "y"], object.cathode.ch.gp.species)
+    write_csv(cathode_stream, ["z", "y"], object.core.cathode.ch.gp.species)
 
     echem_stream = open(joinpath(output_file_folder, "echem.csv"), "w")
     write_csv(echem_stream, ["z", "Estd", "Erev", "CD", "eta_a", "eta_c"])
@@ -186,14 +188,14 @@ end
 
 #= main function call for writing output =#
 function write_output(p::Cell, os::CellStreams, z::Float64)
-    write_channel(os.anode_channel, z, p.ch_anode)
-    write_channel(os.cathode_channel, z, p.ch_cathode)
+    write_channel(os.anode_channel, z, p.core.ch_anode)
+    write_channel(os.cathode_channel, z, p.core.ch_cathode)
 
-    write_electrode(os.anode, z, p.anode)
-    write_electrode(os.cathode, z, p.cathode)
+    write_electrode(os.anode, z, p.core.anode)
+    write_electrode(os.cathode, z, p.core.cathode)
 
-    write_electrochemistry(os.echem, z, p.eChem)    
-    
+    write_electrochemistry(os.echem, z, p.core.eChem)
+
 end
 
 #= write the channel data =#

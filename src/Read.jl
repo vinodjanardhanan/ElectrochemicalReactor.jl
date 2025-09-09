@@ -177,18 +177,18 @@ function get_electrode(electrode::XMLElement, channel::Channel, lib_dir)
     Dkn_e = Array{Float64, 1}(undef, n_sp)
     D_ij_e = Matrix(undef, n_sp, n_sp)
     Dkl_DGM = Matrix(undef, n_sp, n_sp)
-    Dkm = Array{Float64,1}()
+    Dkm = Array{Float64,1}(undef, n_sp)        
     ws = WorkSpace(Dkn_e, D_ij_e, Dkl_DGM, Dkm)
     tr_file = get_path(lib_dir, "transport.dat")
     sp_trd = create_transport_data(channel.gp.species, tr_file)
     jks = Array{Array{Float64,1},1}(undef, n_cells)    
     ρY = Array{Array{Float64,1},1}(undef, n_cells)
-    conc = Array{Array{Float64,1},1}(undef, n_cells)
+    conc = Array{Array{Float64,1},1}(undef, n_cells)    
     source = Array{Array{Float64,1},1}(undef, n_cells)
-    
+    p = Array{Float64,1}(undef, n_cells)
     
     effective_coefficients!(ws, props, sp_trd, channel.gp.p, channel.gp.T, channel.gp.thermo_obj.molwt)
-    return Electrode(channel, t, n_cells, props, surf_mech, surf_state, ws, sp_trd, AbyV, mole_fracs, mass_fracs, ρY, conc, source, jks)
+    return Electrode(channel, t, n_cells, props, surf_mech, surf_state, ws, sp_trd, AbyV, mole_fracs, mass_fracs, ρY, conc, p, source, jks)
 end
 
 
